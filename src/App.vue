@@ -1,17 +1,14 @@
 <template>
-  <main-screen
-    v-if="statusMatch === 'default'"
-    @onStart="onHandleBeforeStart"
-  />
+  <main-screen v-if="isDefaultStatus" @onStart="handleBeforeStart" />
   <interact-screen
-    v-if="statusMatch === 'match'"
+    v-if="isPlayingStatus"
     :cardsContext="settings.cardsContext"
-    @onFinish="onGetResult"
+    @onFinish="handleFinish"
   />
   <result-screen
-    v-if="statusMatch === 'result'"
+    v-if="isFinishStatus"
     :timer="timer"
-    @onStartAgain="statusMatch = 'default'"
+    @onStartAgain="resetGame"
   />
   <copy-right />
 </template>
@@ -23,6 +20,12 @@ import ResultScreen from "./components/ResultScreen.vue";
 import CopyRight from "./components/CopyRight.vue";
 
 import { shuffled } from "./utils/array";
+
+const GameStatus = {
+  DEFAULT: "default",
+  PLAYING: "playing",
+  FINISH: "result",
+};
 
 export default {
   name: "App",
@@ -39,30 +42,55 @@ export default {
         cardsContext: [],
         startedAt: null,
       },
-      statusMatch: "default",
+      gameStatus: GameStatus.DEFAULT,
       timer: 0,
     };
   },
+  computed: {
+    isDefaultStatus() {
+      return this.gameStatus === GameStatus.DEFAULT;
+    },
+    isPlayingStatus() {
+      return this.gameStatus === GameStatus.PLAYING;
+    },
+    isFinishStatus() {
+      return this.gameStatus === GameStatus.FINISH;
+    },
+  },
   methods: {
-    onHandleBeforeStart(config) {
+    handleBeforeStart(config) {
       this.settings.totalOfBlocks = config.totalOfBlocks;
+      this.initializeCards();
+      this.startTimer();
 
+      this.gameStatus = GameStatus.PLAYING;
+    },
+    initializeCards() {
       const firstCards = Array.from(
         { length: this.settings.totalOfBlocks / 2 },
-        (_, i) => i + 1
+        (_, index) => index + 1
       );
       const secondCards = [...firstCards];
       const cards = [...firstCards, ...secondCards];
+
       this.settings.cardsContext = shuffled(
         shuffled(shuffled(shuffled(cards)))
       );
-      this.settings.startedAt = new Date().getTime();
-
-      this.statusMatch = "match";
     },
-    onGetResult() {
-      this.timer = new Date().getTime() - this.settings.startedAt;
-      this.statusMatch = "result";
+    startTimer() {
+      this.settings.startedAt = Date.now();
+    },
+    stopTimer() {
+      const currentTime = Date.now();
+      this.timer = currentTime - this.settings.startedAt;
+    },
+    handleFinish() {
+      this.stopTimer();
+      this.gameStatus = GameStatus.FINISH;
+    },
+    resetGame() {
+      this.gameStatus = GameStatus.DEFAULT;
+      this.timer = 0;
     },
   },
 };
