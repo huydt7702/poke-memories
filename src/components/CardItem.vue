@@ -1,17 +1,5 @@
 <template>
-  <div
-    class="card"
-    :class="{ disabled: isDisabled }"
-    :style="{
-      height: `${(920 - 16 * 4) / Math.sqrt(cardsContext.length) - 16}px`,
-      width: `${
-        (((920 - 16 * 4) / Math.sqrt(cardsContext.length) - 16) * 3) / 4
-      }px`,
-      perspective: `${
-        ((((920 - 16 * 4) / Math.sqrt(cardsContext.length) - 16) * 3) / 4) * 2
-      }px`,
-    }"
-  >
+  <div :class="cardClasses" :style="cardStyles">
     <div
       class="card__inner"
       :class="{ 'is-flipped': isFlipped }"
@@ -54,6 +42,24 @@ export default {
       isDisabled: false,
       isFlipped: false,
     };
+  },
+  computed: {
+    cardClasses() {
+      return {
+        card: true,
+        disabled: this.isDisabled,
+      };
+    },
+    cardStyles() {
+      const height = (920 - 16 * 4) / Math.sqrt(this.cardsContext.length) - 16;
+      const width = (height * 3) / 4;
+      const perspective = width * 2;
+      return {
+        height: `${height}px`,
+        width: `${width}px`,
+        perspective: `${perspective}px`,
+      };
+    },
   },
   methods: {
     onToggleFlipCard() {
