@@ -1,17 +1,27 @@
 <template>
   <div class="screen">
     <h1>✨ Congratulations ✨</h1>
-    <h3>{{ Math.round(timer / 1000) }} seconds</h3>
+    <h3>{{ getCompletionTime }} seconds</h3>
     <button @click="onStartAgain">Start Again</button>
   </div>
 </template>
 
 <script>
 export default {
+  data() {
+    return {
+      MILLISECONDS_PER_SECOND: 1000,
+    };
+  },
   props: {
     timer: {
       type: Number,
       required: true,
+    },
+  },
+  computed: {
+    getCompletionTime() {
+      return Math.round(this.timer / this.MILLISECONDS_PER_SECOND);
     },
   },
   methods: {
