@@ -7,12 +7,9 @@
 </template>
 
 <script>
+const MILLISECONDS_PER_SECOND = 1000;
+
 export default {
-  data() {
-    return {
-      MILLISECONDS_PER_SECOND: 1000,
-    };
-  },
   props: {
     timer: {
       type: Number,
@@ -21,7 +18,7 @@ export default {
   },
   computed: {
     getCompletionTime() {
-      return Math.round(this.timer / this.MILLISECONDS_PER_SECOND);
+      return Math.round(this.timer / MILLISECONDS_PER_SECOND);
     },
   },
   methods: {

@@ -17,6 +17,9 @@
 <script>
 import CardFlip from "./CardItem.vue";
 
+const FLIP_BACK_DELAY = 800;
+const GAME_FINISH_DELAY = 920;
+
 export default {
   props: {
     cardsContext: {
@@ -32,8 +35,6 @@ export default {
   data() {
     return {
       flippedCards: [],
-      FLIP_BACK_DELAY: 800,
-      GAME_FINISH_DELAY: 920,
     };
   },
   computed: {
@@ -82,7 +83,7 @@ export default {
       setTimeout(() => {
         this.flipBackUnmatchedCards();
         this.resetFlippedCards();
-      }, this.FLIP_BACK_DELAY);
+      }, FLIP_BACK_DELAY);
     },
     disableMatchedCards() {
       this.flippedCards.forEach((card) => {
@@ -110,7 +111,7 @@ export default {
     finishGame() {
       setTimeout(() => {
         this.$emit("onFinish");
-      }, this.GAME_FINISH_DELAY);
+      }, GAME_FINISH_DELAY);
     },
   },
 };
