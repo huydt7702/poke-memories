@@ -3,19 +3,19 @@
     <h1>POKE MEMORIES</h1>
     <p>Select mode to start game</p>
     <div class="actions">
-      <button @click="onStart(16)">
+      <button @click="onStart(16, 'Easy')">
         <span>4x4</span>
         <span>Easy</span>
       </button>
-      <button @click="onStart(36)">
+      <button @click="onStart(36, 'Normal')">
         <span>6x6</span>
         <span>Normal</span>
       </button>
-      <button @click="onStart(64)">
+      <button @click="onStart(64, 'Hard')">
         <span>8x8</span>
         <span>Hard</span>
       </button>
-      <button @click="onStart(100)">
+      <button @click="onStart(100, 'Super Hard')">
         <span>10x10</span>
         <span>Super Hard</span>
       </button>
@@ -26,9 +26,10 @@
 <script>
 export default {
   methods: {
-    onStart(totalOfBlocks) {
+    onStart(totalOfBlocks, difficulty) {
       this.$emit("onStart", {
         totalOfBlocks,
+        difficulty,
       });
     },
   },

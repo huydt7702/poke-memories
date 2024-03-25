@@ -1,15 +1,6 @@
 <template>
   <div class="screen">
-    <div
-      class="screen__inner"
-      :style="{
-        width: `${
-          ((((920 - 16 * 4) / Math.sqrt(cardsContext.length) - 16) * 3) / 4 +
-            16) *
-          Math.sqrt(cardsContext.length)
-        }px`,
-      }"
-    >
+    <div class="screen__inner" :style="cardStyles">
       <card-flip
         v-for="(card, index) in cardsContext"
         :key="index"
@@ -17,7 +8,7 @@
         :imgBackFaceUrl="`images/${card}.png`"
         :card="{ index, value: card }"
         :cardsContext="cardsContext"
-        @onFlip="checkRule"
+        @onFlip="handleFlip"
       />
     </div>
   </div>
@@ -25,6 +16,9 @@
 
 <script>
 import CardFlip from "./CardItem.vue";
+
+const FLIP_BACK_DELAY = 800;
+const GAME_FINISH_DELAY = 920;
 
 export default {
   props: {
@@ -40,49 +34,84 @@ export default {
   },
   data() {
     return {
-      rules: [],
+      flippedCards: [],
     };
   },
+  computed: {
+    cardStyles() {
+      const width =
+        ((((920 - 16 * 4) / Math.sqrt(this.cardsContext.length) - 16) * 3) / 4 +
+          16) *
+        Math.sqrt(this.cardsContext.length);
+      return {
+        width: `${width}px`,
+      };
+    },
+  },
   methods: {
-    checkRule(card) {
-      if (this.rules.length === 2) return false;
-      this.rules.push(card);
+    handleFlip(card) {
+      if (this.isFlippedLimitReached()) return;
+      this.addFlippedCard(card);
 
-      if (
-        this.rules.length === 2 &&
-        this.rules[0].value === this.rules[1].value
-      ) {
-        console.log("Right...");
-        this.$refs[`card-${this.rules[0].index}`][0].onEnabledDisableMode();
-        this.$refs[`card-${this.rules[1].index}`][0].onEnabledDisableMode();
-
-        this.rules = [];
-
-        const disabledElements = document.querySelectorAll(
-          ".screen .card.disabled"
-        );
-        if (
-          disabledElements &&
-          disabledElements.length === this.cardsContext.length - 2
-        ) {
-          setTimeout(() => {
-            this.$emit("onFinish");
-          }, 920);
+      if (this.isFlippedLimitReached()) {
+        if (this.isMatched()) {
+          this.handleMatched();
+        } else {
+          this.handleUnmatched();
         }
-      } else if (
-        this.rules.length === 2 &&
-        this.rules[0].value !== this.rules[1].value
-      ) {
-        console.log("Wrong...");
-        setTimeout(() => {
-          // close two card
-          this.$refs[`card-${this.rules[0].index}`][0].onFlipBackCard();
-          this.$refs[`card-${this.rules[1].index}`][0].onFlipBackCard();
+      }
+    },
+    isFlippedLimitReached() {
+      return this.flippedCards.length === 2;
+    },
+    addFlippedCard(card) {
+      this.flippedCards.push(card);
+    },
+    isMatched() {
+      const [firstCard, secondCard] = this.flippedCards;
+      return firstCard.value === secondCard.value;
+    },
+    handleMatched() {
+      this.disableMatchedCards();
+      this.resetFlippedCards();
 
-          // reset rules to []
-          this.rules = [];
-        }, 800);
-      } else return false;
+      if (this.isGameFinished()) {
+        this.finishGame();
+      }
+    },
+    handleUnmatched() {
+      setTimeout(() => {
+        this.flipBackUnmatchedCards();
+        this.resetFlippedCards();
+      }, FLIP_BACK_DELAY);
+    },
+    disableMatchedCards() {
+      this.flippedCards.forEach((card) => {
+        const cardRef = this.$refs[`card-${card.index}`][0];
+        cardRef.onEnabledDisableMode();
+      });
+    },
+    resetFlippedCards() {
+      this.flippedCards = [];
+    },
+    flipBackUnmatchedCards() {
+      this.flippedCards.forEach((card) => {
+        const cardRef = this.$refs[`card-${card.index}`][0];
+        cardRef.onFlipBackCard();
+      });
+    },
+    isGameFinished() {
+      const cardsDisabledElement = document.querySelectorAll(
+        ".screen .card.disabled"
+      );
+      if (!cardsDisabledElement) return;
+
+      return cardsDisabledElement.length === this.cardsContext.length - 2;
+    },
+    finishGame() {
+      setTimeout(() => {
+        this.$emit("onFinish");
+      }, GAME_FINISH_DELAY);
     },
   },
 };
